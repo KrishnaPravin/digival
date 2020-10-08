@@ -1,0 +1,33 @@
+.container {
+  text-align: center;
+}
+
+.purple {
+  color: purple;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 10px;
+}
+
+.slot {
+  border: 1px solid blue;
+  width: calc(100vw / 8);
+}
+
+.blue,
+.red {
+  transform: scaleY(1.1);
+  border: none;
+}
+
+.blue .adjust-slot {
+  display: none;
+}
+
+.blue .adjust-slot:first-child {
+  display: inline-block;
+  color: white;
+}

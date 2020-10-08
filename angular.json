@@ -119,6 +119,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "digival"
+    }
+  },
+  "defaultProject": "digival",
+  "cli": {
+    "analytics": false
+  }
 }

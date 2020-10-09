@@ -1,56 +1,50 @@
-<div class="container">
-  <div style="margin-bottom: 10px">Select a new Schedule</div>
-  <div>November 2019</div>
-  <div class="purple" style="margin-bottom: 10px">
-    Lorium Ipsum Sha'ban 1441, Rabl'ul awwal 1441
+<div class="app">
+  <div class="head-container">
+    <div class="head-wrapper">
+      <div class="head">Select a new Schedule</div>
+      <div style="font-weight: bold">{{ startDate | date: "MMMM y" }}</div>
+      <div class="purple head">
+        {{ currentMonthInArabic }}
+      </div>
+    </div>
   </div>
-  <div>
-    <table>
-      <tr>
-        <td></td>
-        <td>S</td>
-        <td>M</td>
-        <td>T</td>
-        <td>W</td>
-        <td>T</td>
-        <td>F</td>
-        <td>S</td>
-      </tr>
-      <tr class="days-row">
-        <td></td>
-        <td *ngFor="let date of daysList" class="days">
-          <span>{{ date | date: "d" }}</span>
-          <br />
-          <span>{{ date | date: "d" }}</span>
-        </td>
-      </tr>
-      <tr *ngFor="let slotRow of slotRows; let i = index">
-        <td class="slot-time">
+
+  <div class="calender">
+    <div class="day-head-container">
+      <div class="slot-date-empty"></div>
+      <div class="slot-date" *ngFor="let date of daysList">
+        <div>{{ date[0] | date: "EEEEE" }}</div>
+        <div>
+          {{ date[0] | date: "d" }}
+        </div>
+        <div>
+          <span class="arabic-date">{{ date[1] }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="shadow"></div>
+    <div class="hours-container">
+      <div>
+        <div
+          class="slot-hours"
+          *ngFor="let slotColumn of slotColumns[0]; let i = index"
+        >
           <span *ngIf="i === 0">12 a</span>
           <span *ngIf="i > 0 && i < 12">{{ i }}</span>
           <span *ngIf="i > 12">{{ i - 12 }}</span>
           <span *ngIf="i === 12">12 p</span>
-        </td>
-        <ng-container *ngFor="let slotNode of slotRow">
-          <td
+        </div>
+      </div>
+      <div *ngFor="let slotColumn of slotColumns">
+        <div *ngFor="let slotNode of slotColumn; let i = index">
+          <div
             class="slot {{ slotNode?.slotId ? 'schedule' : '' }}"
             [style.background-color]="slotNode.color"
             (click)="onClickSlotNode(slotNode)"
-          >
-            <span
-              class="adjust-slot"
-              *ngIf="slotNode.showAdjustBar"
-              (mousedown)="onMouseOver()"
-            >
-              <div cdkDrag cdkDragLockAxis="y">
-                <hr />
-                <hr />
-              </div>
-            </span>
-          </td>
-        </ng-container>
-      </tr>
-    </table>
+          ></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="buttons">
     <button class="purple">CANCEL</button>

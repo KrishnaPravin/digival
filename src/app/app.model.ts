@@ -13,10 +13,10 @@ export type SlotNode = {
   hour: number;
   slotId: string;
   color: string;
-  showAdjustBar: boolean;
 };
 
 export type SlotRows = SlotNode[];
+export type SlotColumns = SlotNode[];
 
 export type DialogData = {
   slots: SlotsMap;

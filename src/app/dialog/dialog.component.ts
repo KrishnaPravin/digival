@@ -10,6 +10,8 @@ import { DialogData } from '../app.model';
 export class DialogComponent implements OnInit {
   startTime: number | string;
   endTime: number | string;
+  hours = new Array(24).fill(0).map((_, i) => i);
+  cost: boolean;
 
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
@@ -20,9 +22,10 @@ export class DialogComponent implements OnInit {
     const slot = this.data.slots[this.data.slotNode.slotId];
     this.startTime = slot ? slot.start.getHours() : this.data.slotNode.hour;
     this.endTime = slot ? slot.end.getHours() : this.data.slotNode.hour + 3;
+    this.cost = slot.cost;
   }
 
-  onNoClick(): void {
+  close(): void {
     this.dialogRef.close();
   }
 
@@ -31,12 +34,13 @@ export class DialogComponent implements OnInit {
       Number(this.startTime),
       Number(this.endTime),
       this.data.slotNode.datePosition,
-      false
+      this.cost
     );
     this.dialogRef.close();
   }
+
   delete() {
-    this.data.delete(this.data.slotNode);
     this.dialogRef.close();
+    this.data.delete(this.data.slotNode);
   }
 }

@@ -1,7 +1,7 @@
 <!-- <h1 mat-dialog-title>Hi {{ data.n ame }}</h1> -->
 <div class="head">
   <span>Schedule time period</span>
-  <span class="close" (click)="onNoClick()">
+  <span class="close" (click)="close()">
     <img src="/assets/close.svg" style="width: 12px; cursor: pointer" />
   </span>
 </div>
@@ -12,122 +12,64 @@
 <div class="time-picker-container">
   <div>
     <span>Start time:</span>
-    <select
-      name="startTime"
-      id="startTime"
-      #start
-      (change)="startTime = start.value"
-      [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-    >
-      <option [selected]="startTime === 0" value="0">12 AM</option>
-      <option [selected]="startTime === 1" value="1">1 AM</option>
-      <option [selected]="startTime === 2" value="2">2 AM</option>
-      <option [selected]="startTime === 3" value="3">3 AM</option>
-      <option [selected]="startTime === 4" value="4">4 AM</option>
-      <option [selected]="startTime === 5" value="5">5 AM</option>
-      <option [selected]="startTime === 6" value="6">6 AM</option>
-      <option [selected]="startTime === 7" value="7">7 AM</option>
-      <option [selected]="startTime === 8" value="8">8 AM</option>
-      <option [selected]="startTime === 9" value="9">9 AM</option>
-      <option [selected]="startTime === 10" value="10">10 AM</option>
-      <option [selected]="startTime === 11" value="11">11 AM</option>
-      <option [selected]="startTime === 12" value="12">12 PM</option>
-      <option [selected]="startTime === 13" value="13">1 PM</option>
-      <option [selected]="startTime === 14" value="14">2 PM</option>
-      <option [selected]="startTime === 15" value="15">3 PM</option>
-      <option [selected]="startTime === 16" value="16">4 PM</option>
-      <option [selected]="startTime === 17" value="17">5 PM</option>
-      <option [selected]="startTime === 18" value="18">6 PM</option>
-      <option [selected]="startTime === 19" value="19">7 PM</option>
-      <option [selected]="startTime === 20" value="20">8 PM</option>
-      <option [selected]="startTime === 21" value="21">9 PM</option>
-      <option [selected]="startTime === 22" value="22">10 PM</option>
-      <option [selected]="startTime === 23" value="23">11 PM</option>
-    </select>
+    <mat-form-field [style.width.px]="80">
+      <mat-select
+        [(value)]="startTime"
+        [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
+      >
+        <mat-option *ngFor="let hour of hours" [value]="hour">
+          <span *ngIf="hour === 0">12 AM</span>
+          <span *ngIf="hour > 0 && hour < 12">{{ hour }} AM</span>
+          <span *ngIf="hour === 12">12 PM</span>
+          <span *ngIf="hour > 12">{{ hour - 12 }} PM</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
   <div>
     <span>End time:</span>
-    <select
-      name="startTime"
-      id="startTime"
-      #end
-      (change)="endTime = end.value"
-      [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-    >
-      <option [selected]="endTime === 0" value="0">12 AM</option>
-      <option [selected]="endTime === 1" value="1">1 AM</option>
-      <option [selected]="endTime === 2" value="2">2 AM</option>
-      <option [selected]="endTime === 3" value="3">3 AM</option>
-      <option [selected]="endTime === 4" value="4">4 AM</option>
-      <option [selected]="endTime === 5" value="5">5 AM</option>
-      <option [selected]="endTime === 6" value="6">6 AM</option>
-      <option [selected]="endTime === 7" value="7">7 AM</option>
-      <option [selected]="endTime === 8" value="8">8 AM</option>
-      <option [selected]="endTime === 9" value="9">9 AM</option>
-      <option [selected]="endTime === 10" value="10">10 AM</option>
-      <option [selected]="endTime === 11" value="11">11 AM</option>
-      <option [selected]="endTime === 12" value="12">12 PM</option>
-      <option [selected]="endTime === 13" value="13">1 PM</option>
-      <option [selected]="endTime === 14" value="14">2 PM</option>
-      <option [selected]="endTime === 15" value="15">3 PM</option>
-      <option [selected]="endTime === 16" value="16">4 PM</option>
-      <option [selected]="endTime === 17" value="17">5 PM</option>
-      <option [selected]="endTime === 18" value="18">6 PM</option>
-      <option [selected]="endTime === 19" value="19">7 PM</option>
-      <option [selected]="endTime === 20" value="20">8 PM</option>
-      <option [selected]="endTime === 21" value="21">9 PM</option>
-      <option [selected]="endTime === 22" value="22">10 PM</option>
-      <option [selected]="endTime === 23" value="23">11 PM</option>
-    </select>
+    <mat-form-field [style.width.px]="80" class="asd">
+      <mat-select
+        [(value)]="endTime"
+        [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
+      >
+        <mat-option *ngFor="let hour of hours" [value]="hour">
+          <span *ngIf="hour === 0">12 AM</span>
+          <span *ngIf="hour > 0 && hour < 12">{{ hour }} AM</span>
+          <span *ngIf="hour === 12">12 PM</span>
+          <span *ngIf="hour > 12">{{ hour - 12 }} PM</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 </div>
 
 <div class="checkbox-container">
   <div>
-    <input
-      type="checkbox"
-      name="repeat"
-      id="repeat"
-      [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-    />
-    <span>Repeat for next two weeks</span>
+    <mat-checkbox [disabled]="data.slots[data.slotNode?.slotId]?.scheduled">
+      Repeat for next two weeks
+    </mat-checkbox>
   </div>
   <div>
-    <input
-      type="checkbox"
-      name="nocost"
-      id="nocost"
+    <mat-checkbox
       [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-    />
-    <span>No cost (Sadaqa)</span>
+      [(ngModel)]="cost"
+    >
+      No cost (Sadaqa)
+    </mat-checkbox>
   </div>
 </div>
 
-<div class="bottom-buttons">
-  <button
-    (click)="delete()"
-    [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-  >
-    DELETE
-  </button>
-  <button
-    (click)="save()"
-    [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-  >
-    SAVE
-  </button>
+<div
+  class="bottom-buttons"
+  *ngIf="!data.slots[data.slotNode?.slotId]?.scheduled"
+>
+  <button (click)="delete()">DELETE</button>
+  <button (click)="save()">SAVE</button>
 </div>
-
-<!-- <div mat-dialog-content>
-  <p>What's your favorite animal?</p>
-  <mat-form-field>
-    <mat-label>Favorite Animal</mat-label>
-    <input matInput [(ngModel)]="data.animal" />
-  </mat-form-field>
-</div> -->
-<!-- <div mat-dialog-actions> -->
-<!-- <button mat-button (click)="onNoClick()">No Thanks</button> -->
-<!-- <button mat-button [mat-dialog-close]="data.animal" cdkFocusInitial>
-Ok
-</button> -->
-<!-- </div> -->
+<div
+  class="bottom-buttons"
+  *ngIf="data.slots[data.slotNode?.slotId]?.scheduled"
+>
+  <button (click)="close()">OKAY</button>
+</div>

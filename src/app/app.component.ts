@@ -4,7 +4,14 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { DialogData, Slot, SlotNode, SlotRows, SlotsMap } from './app.model';
+import {
+  DialogData,
+  Slot,
+  SlotColumns,
+  SlotNode,
+  SlotRows,
+  SlotsMap,
+} from './app.model';
 import { DialogComponent } from './dialog/dialog.component';
 
 @Component({
@@ -13,66 +20,68 @@ import { DialogComponent } from './dialog/dialog.component';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
+  currentMonthInArabic: string;
   startDate: Date;
-  daysList: Date[];
+  daysList: [Date, string][];
   slotRows: SlotRows[];
+  slotColumns: SlotColumns[];
   slots: SlotsMap = {
     a: {
-      start: new Date('2020-10-09T05:00:00'),
-      end: new Date('2020-10-09T08:00:00'),
+      start: new Date('2020-10-12T05:00:00'),
+      end: new Date('2020-10-12T08:00:00'),
       scheduled: false,
-      cost: false,
+      cost: true,
     },
     b: {
-      start: new Date('2020-10-11T10:00:00'),
-      end: new Date('2020-10-11T13:00:00'),
+      start: new Date('2020-10-15T10:00:00'),
+      end: new Date('2020-10-15T13:00:00'),
       scheduled: true,
-      cost: false,
+      cost: true,
     },
   };
-  // slotMap: { [key: string]: SlotNode } = {};
 
   constructor(public dialog: MatDialog) {}
 
   ngOnInit() {
     this.startDate = new Date();
-    this.daysList = new Array(7)
-      .fill(0)
-      .map((_, i) => this.addDays(this.startDate, i));
+    this.currentMonthInArabic = new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
+      month: 'long',
+      year: 'numeric',
+    }).format(this.startDate);
+    const arabicFormatter = new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
+      day: 'numeric',
+    });
+    this.daysList = new Array(14).fill(0).map((_, i) => {
+      const d = this.addDays(this.startDate, i);
+      return [d, arabicFormatter.format(this.addDays(this.startDate, i))];
+    });
 
-    this.slotRows = new Array(24).fill(0).map((_, hour) =>
-      new Array(7).fill(0).map((_, datePosition) => {
+    this.slotColumns = new Array(14).fill(0).map((_, datePosition) =>
+      new Array(24).fill(0).map((_, hour) => {
         return {
           date: this.addDays(this.startDate, datePosition),
           datePosition,
           hour,
           color: 'white',
-          showAdjustBar: false,
           slotId: null,
         };
       })
     );
+
     Object.entries(this.slots).forEach(([slotId, slot]) => {
       const datePosition = slot.start.getDate() - this.startDate.getDate();
       let startHour = slot.start.getHours();
       const endHour = slot.end.getHours();
       const restColor = slot.scheduled ? '#f89696' : '#e0e0e0';
       const bookingColor = slot.scheduled ? '#f40105' : '#3eb2ff';
-      this.slotRows[startHour - 2][datePosition].color = restColor;
-      this.slotRows[startHour - 2][datePosition].slotId = slotId;
-      this.slotRows[startHour - 1][datePosition].color = restColor;
-      this.slotRows[startHour - 1][datePosition].slotId = slotId;
-      this.slotRows[endHour + 1][datePosition].color = restColor;
-      this.slotRows[endHour + 1][datePosition].slotId = slotId;
-      this.slotRows[endHour + 2][datePosition].color = restColor;
-      this.slotRows[endHour + 2][datePosition].slotId = slotId;
-      if (!slot.scheduled) {
-        this.slotRows[startHour][datePosition].showAdjustBar = true;
-        this.slotRows[endHour][datePosition].showAdjustBar = true;
-      }
+      const rest = [startHour - 2, startHour - 1, endHour + 1, endHour + 2];
+      rest.forEach((i) => {
+        this.slotColumns[datePosition][i].color = restColor;
+        this.slotColumns[datePosition][i].slotId = slotId;
+      });
       while (startHour <= endHour) {
-        this.slotRows[startHour][datePosition].color = bookingColor;
-        this.slotRows[startHour][datePosition].slotId = slotId;
+        this.slotColumns[datePosition][startHour].color = bookingColor;
+        this.slotColumns[datePosition][startHour].slotId = slotId;
         startHour++;
       }
     });
@@ -86,7 +95,7 @@ export class AppComponent implements OnInit {
     if (node.slotId) {
       this.dialog.closeAll();
       this.dialog.open(DialogComponent, {
-        width: '280px',
+        width: '320px',
         data: {
           slots: this.slots,
           slotNode: node,

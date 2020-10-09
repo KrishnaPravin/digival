@@ -10,28 +10,22 @@
 
 .description {
   font-size: 0.9rem;
-  margin: 15px 0;
+  margin: 20px 0 5px;
 }
 
 .time-picker-container > div {
+  align-items: center;
   display: flex;
   justify-content: space-between;
+  margin-bottom: -15px;
 }
 
-.time-picker-container > div,
-.checkbox-container > div {
-  margin-bottom: 15px;
-}
-
-.time-picker-container,
 .checkbox-container {
-  padding-top: 5px;
+  padding-top: 22px;
 }
 
-select {
-  border: none;
-  cursor: pointer;
-  outline: none;
+.checkbox-container > div {
+  padding-bottom: 10px;
 }
 
 .bottom-buttons {
@@ -46,6 +40,7 @@ button {
   color: #7117ef;
   font-weight: bold;
   cursor: pointer;
+  outline: none;
 }
 
 button:disabled,
@@ -55,9 +50,5 @@ select:disabled {
 }
 
 .bottom-buttons button + button {
-  margin-left: 10px;
-}
-
-input {
-  border: 1px solid grey;
+  margin-left: 20px;
 }

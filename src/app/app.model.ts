@@ -21,11 +21,12 @@ export type SlotColumns = SlotNode[];
 export type DialogData = {
   slots: SlotsMap;
   slotNode: SlotNode;
-  createSchedule: (
+  edit: (
     startTime: number,
     endTime: number,
-    date: number,
-    cost: boolean
-  ) => void;
+    cost: boolean,
+    datePosition: number,
+    slotId: string
+  ) => boolean;
   delete: (node: SlotNode) => void;
 };

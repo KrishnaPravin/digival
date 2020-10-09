@@ -27,14 +27,14 @@ export class AppComponent implements OnInit {
   slotColumns: SlotColumns[];
   slots: SlotsMap = {
     a: {
-      start: new Date('2020-10-12T05:00:00'),
-      end: new Date('2020-10-12T08:00:00'),
+      start: new Date('2020-10-15T05:00:00'),
+      end: new Date('2020-10-15T08:00:00'),
       scheduled: false,
       cost: true,
     },
     b: {
-      start: new Date('2020-10-15T10:00:00'),
-      end: new Date('2020-10-15T13:00:00'),
+      start: new Date('2020-10-19T10:00:00'),
+      end: new Date('2020-10-19T13:00:00'),
       scheduled: true,
       cost: true,
     },
@@ -74,12 +74,12 @@ export class AppComponent implements OnInit {
       const endHour = slot.end.getHours();
       const restColor = slot.scheduled ? '#f89696' : '#e0e0e0';
       const bookingColor = slot.scheduled ? '#f40105' : '#3eb2ff';
-      const rest = [startHour - 2, startHour - 1, endHour + 1, endHour + 2];
+      const rest = [startHour - 2, startHour - 1, endHour, endHour + 1];
       rest.forEach((i) => {
         this.slotColumns[datePosition][i].color = restColor;
         this.slotColumns[datePosition][i].slotId = slotId;
       });
-      while (startHour <= endHour) {
+      while (startHour < endHour) {
         this.slotColumns[datePosition][startHour].color = bookingColor;
         this.slotColumns[datePosition][startHour].slotId = slotId;
         startHour++;
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit {
         data: {
           slots: this.slots,
           slotNode: node,
-          createSchedule: this.createSchedule.bind(this),
+          edit: this.edit.bind(this),
           delete: (node: SlotNode) => {
             delete this.slots[node.slotId];
             this.ngOnInit();
@@ -107,40 +107,73 @@ export class AppComponent implements OnInit {
         },
       });
     } else {
-      this.createSchedule1(node);
+      if (this.verifyMaxCountForADay(node)) {
+        if (this.verifySpace(node)) {
+          this.createSchedule(node);
+        } else {
+          alert('Limited free space to squeeze in');
+        }
+      } else {
+        alert('Max slots reached for today');
+      }
     }
   }
 
-  createSchedule1(node: SlotNode) {
+  createSchedule(node: SlotNode) {
+    const MIN_STUDY_DURATION = 3;
     const id = String(new Date().getTime());
     const scheduleDate = this.addDays(this.startDate, node.datePosition);
     this.slots[id] = {
       start: new Date(scheduleDate.setHours(node.hour, 0, 0, 0)),
-      end: new Date(scheduleDate.setHours(node.hour + 3, 0, 0, 0)),
+      end: new Date(
+        scheduleDate.setHours(node.hour + MIN_STUDY_DURATION, 0, 0, 0)
+      ),
       scheduled: false,
       cost: false,
     };
     this.ngOnInit();
   }
 
-  createSchedule(
+  edit(
     startHour: number,
     endHour: number,
+    cost: boolean,
     datePosition: number,
-    cost: boolean
+    slotId: string
   ) {
-    const id = String(new Date().getTime());
-    const scheduleDate = this.addDays(this.startDate, datePosition);
-    this.slots[id] = {
-      start: new Date(scheduleDate.setHours(startHour, 0, 0, 0)),
-      end: new Date(scheduleDate.setHours(endHour, 0, 0, 0)),
-      scheduled: false,
-      cost,
-    };
+    const todaysList = this.slotColumns[datePosition];
+    let newStartHour = startHour - 2;
+    while (newStartHour < endHour + 2) {
+      if (
+        todaysList[newStartHour].slotId &&
+        todaysList[newStartHour].slotId !== slotId
+      )
+        return false;
+      newStartHour++;
+    }
+    this.slots[slotId].start.setHours(startHour);
+    this.slots[slotId].end.setHours(endHour);
+    this.slots[slotId].cost = cost;
     this.ngOnInit();
+    return true;
   }
 
-  onMouseOver() {
-    console.log('mouse over');
+  verifyMaxCountForADay(node: SlotNode): boolean {
+    const todaysList = this.slotColumns[node.datePosition];
+    const slots = new Set(
+      todaysList.filter((n) => Boolean(n.slotId)).map((n) => n.slotId)
+    );
+    return slots.size < 2;
+  }
+
+  verifySpace(node: SlotNode): boolean {
+    const selectedStartHour = node.hour;
+    if (node.hour < 2 || node.hour > 19) return false;
+    const todaysList = this.slotColumns[node.datePosition];
+    const requiredEmptySlots = new Array(6)
+      .fill(0)
+      .map((_, i) => i + selectedStartHour - 2);
+    if (requiredEmptySlots.some((i) => todaysList[i].slotId)) return false;
+    return true;
   }
 }

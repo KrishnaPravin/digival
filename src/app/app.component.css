@@ -3,31 +3,73 @@
 }
 
 .purple {
-  color: purple;
+  color: #7117ef;
 }
 
-.buttons {
-  display: flex;
-  justify-content: space-evenly;
-  margin: 10px;
+.days-row td {
+  margin-bottom: 5px;
 }
 
-.slot {
-  border: 1px solid blue;
+.days + .days {
+  border-left: 1px solid #bdbcbc;
+}
+
+.slot-time {
+  font-size: 0.7rem;
+  vertical-align: text-bottom;
   width: calc(100vw / 8);
 }
 
-.blue,
-.red {
+.slot {
+  border: 1px solid #eeeeee;
+  border-radius: 2px;
+  box-shadow: 0px 1px 0px 0px #f3f3f3;
+  height: 20px;
+  width: calc(100vw / 8);
+}
+
+.schedule {
   transform: scaleY(1.1);
   border: none;
 }
 
-.blue .adjust-slot {
-  display: none;
-}
-
-.blue .adjust-slot:first-child {
+.adjust-slot:first-child {
   display: inline-block;
   color: white;
+  cursor: ns-resize;
+  width: 100%;
+}
+
+.adjust-slot {
+  padding: 5px 0;
+}
+
+.adjust-slot hr {
+  margin: 0 5px;
+}
+
+.adjust-slot hr + hr {
+  margin-top: 2px;
+}
+
+.buttons {
+  background-color: white;
+  bottom: 0;
+  display: flex;
+  justify-content: space-evenly;
+  padding: 10px;
+  position: sticky;
+}
+
+.buttons button {
+  background-color: #fff;
+  border: 1px solid #cbcbcb;
+  border-radius: 5px;
+  font-weight: bold;
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.buttons button + button {
+  margin-left: 10px;
 }

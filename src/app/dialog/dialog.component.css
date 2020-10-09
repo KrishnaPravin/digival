@@ -1,0 +1,63 @@
+.head {
+  display: flex;
+  font-size: 1.2rem;
+  justify-content: space-between;
+}
+
+.close {
+  color: grey;
+}
+
+.description {
+  font-size: 0.9rem;
+  margin: 15px 0;
+}
+
+.time-picker-container > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.time-picker-container > div,
+.checkbox-container > div {
+  margin-bottom: 15px;
+}
+
+.time-picker-container,
+.checkbox-container {
+  padding-top: 5px;
+}
+
+select {
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.bottom-buttons {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 15px;
+}
+
+button {
+  border: none;
+  background-color: white;
+  color: #7117ef;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+.bottom-buttons button + button {
+  margin-left: 10px;
+}
+
+input {
+  border: 1px solid grey;
+}

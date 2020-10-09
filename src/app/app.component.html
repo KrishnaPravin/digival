@@ -2,7 +2,7 @@
   <div style="margin-bottom: 10px">Select a new Schedule</div>
   <div>November 2019</div>
   <div class="purple" style="margin-bottom: 10px">
-    Sha'ban 1441, Rabl'ul awwal 1441
+    Lorium Ipsum Sha'ban 1441, Rabl'ul awwal 1441
   </div>
   <div>
     <table>
@@ -16,32 +16,44 @@
         <td>F</td>
         <td>S</td>
       </tr>
-      <tr>
+      <tr class="days-row">
         <td></td>
-        <td *ngFor="let date of daysList">{{ date | date: "d" }}</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td *ngFor="let date of daysList">{{ date | date: "d" }}</td>
+        <td *ngFor="let date of daysList" class="days">
+          <span>{{ date | date: "d" }}</span>
+          <br />
+          <span>{{ date | date: "d" }}</span>
+        </td>
       </tr>
       <tr *ngFor="let slotRow of slotRows; let i = index">
-        <td style="width: calc(100vw / 8)">
+        <td class="slot-time">
           <span *ngIf="i === 0">12 a</span>
           <span *ngIf="i > 0 && i < 12">{{ i }}</span>
           <span *ngIf="i > 12">{{ i - 12 }}</span>
           <span *ngIf="i === 12">12 p</span>
         </td>
-        <td
-          *ngFor="let slotNode of slotRow"
-          class="slot {{ slotNode.color }}"
-          [style.background-color]="slotNode.color"
-        >
-          <span class="adjust-slot" *ngIf="slotNode.showAdjustBar">-</span>
-        </td>
+        <ng-container *ngFor="let slotNode of slotRow">
+          <td
+            class="slot {{ slotNode?.slotId ? 'schedule' : '' }}"
+            [style.background-color]="slotNode.color"
+            (click)="onClickSlotNode(slotNode)"
+          >
+            <span
+              class="adjust-slot"
+              *ngIf="slotNode.showAdjustBar"
+              (mousedown)="onMouseOver()"
+            >
+              <div cdkDrag cdkDragLockAxis="y">
+                <hr />
+                <hr />
+              </div>
+            </span>
+          </td>
+        </ng-container>
       </tr>
     </table>
   </div>
   <div class="buttons">
-    <button class="purple">CANCEL</button><button disabled>DONE</button>
+    <button class="purple">CANCEL</button>
+    <button disabled>DONE</button>
   </div>
 </div>

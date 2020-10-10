@@ -1,4 +1,3 @@
-<!-- <h1 mat-dialog-title>Hi {{ data.n ame }}</h1> -->
 <div class="head">
   <span>Schedule time period</span>
   <span class="close" (click)="close()">
@@ -13,10 +12,7 @@
   <div>
     <span>Start time:</span>
     <mat-form-field [style.width.px]="80">
-      <mat-select
-        [(value)]="startTime"
-        [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-      >
+      <mat-select [(value)]="startTime" [disabled]="isScheduled">
         <mat-option *ngFor="let hour of hours" [value]="hour">
           <span *ngIf="hour === 0">12 AM</span>
           <span *ngIf="hour > 0 && hour < 12">{{ hour }} AM</span>
@@ -29,10 +25,7 @@
   <div>
     <span>End time:</span>
     <mat-form-field [style.width.px]="80" class="asd">
-      <mat-select
-        [(value)]="endTime"
-        [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-      >
+      <mat-select [(value)]="endTime" [disabled]="isScheduled">
         <mat-option *ngFor="let hour of hours" [value]="hour">
           <span *ngIf="hour === 0">12 AM</span>
           <span *ngIf="hour > 0 && hour < 12">{{ hour }} AM</span>
@@ -46,30 +39,21 @@
 
 <div class="checkbox-container">
   <div>
-    <mat-checkbox [disabled]="data.slots[data.slotNode?.slotId]?.scheduled">
+    <mat-checkbox [disabled]="isScheduled">
       Repeat for next two weeks
     </mat-checkbox>
   </div>
   <div>
-    <mat-checkbox
-      [disabled]="data.slots[data.slotNode?.slotId]?.scheduled"
-      [(ngModel)]="cost"
-    >
+    <mat-checkbox [disabled]="isScheduled" [(ngModel)]="cost">
       No cost (Sadaqa)
     </mat-checkbox>
   </div>
 </div>
 
-<div
-  class="bottom-buttons"
-  *ngIf="!data.slots[data.slotNode?.slotId]?.scheduled"
->
+<div class="bottom-buttons" *ngIf="!isScheduled">
   <button (click)="delete()">DELETE</button>
   <button (click)="save()">SAVE</button>
 </div>
-<div
-  class="bottom-buttons"
-  *ngIf="data.slots[data.slotNode?.slotId]?.scheduled"
->
+<div class="bottom-buttons" *ngIf="isScheduled">
   <button (click)="close()">OKAY</button>
 </div>

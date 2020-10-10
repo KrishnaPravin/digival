@@ -1,18 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import {
-  DialogData,
-  Slot,
-  SlotColumns,
-  SlotNode,
-  SlotRows,
-  SlotsMap,
-} from './app.model';
+import { MatDialog } from '@angular/material/dialog';
+import { DaySlotsList, SlotNode, UserSlotsMap } from './app.model';
 import { DialogComponent } from './dialog/dialog.component';
+
+type DaysList = [Date, string][];
+const MIN_STUDY_DURATION = 3;
 
 @Component({
   selector: 'app-root',
@@ -20,19 +12,19 @@ import { DialogComponent } from './dialog/dialog.component';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  currentMonthInArabic: string;
   startDate: Date;
-  daysList: [Date, string][];
-  slotRows: SlotRows[];
-  slotColumns: SlotColumns[];
-  slots: SlotsMap = {
-    a: {
+  currentMonthInArabic: string;
+  daysList: DaysList;
+  daySlotsList: DaySlotsList;
+  userSlotsMap: UserSlotsMap = {
+    // Will be from an API
+    aaaa: {
       start: new Date('2020-10-15T05:00:00'),
       end: new Date('2020-10-15T08:00:00'),
       scheduled: false,
       cost: true,
     },
-    b: {
+    bbbbb: {
       start: new Date('2020-10-19T10:00:00'),
       end: new Date('2020-10-19T13:00:00'),
       scheduled: true,
@@ -51,15 +43,22 @@ export class AppComponent implements OnInit {
     const arabicFormatter = new Intl.DateTimeFormat('en-TN-u-ca-islamic', {
       day: 'numeric',
     });
-    this.daysList = new Array(14).fill(0).map((_, i) => {
-      const d = this.addDays(this.startDate, i);
-      return [d, arabicFormatter.format(this.addDays(this.startDate, i))];
+
+    // Generate 14 days (head date column)
+    this.daysList = new Array(14).fill(null).map((_, datePosition) => {
+      const d = addDays(this.startDate, datePosition);
+      return [d, arabicFormatter.format(d)];
     });
 
-    this.slotColumns = new Array(14).fill(0).map((_, datePosition) =>
+    this.loadSlotsGrid();
+  }
+
+  loadSlotsGrid() {
+    // Generate 14x24 empty slots to fill the view
+    this.daySlotsList = new Array(14).fill(null).map((_, datePosition) =>
       new Array(24).fill(0).map((_, hour) => {
         return {
-          date: this.addDays(this.startDate, datePosition),
+          date: addDays(this.startDate, datePosition),
           datePosition,
           hour,
           color: 'white',
@@ -68,27 +67,24 @@ export class AppComponent implements OnInit {
       })
     );
 
-    Object.entries(this.slots).forEach(([slotId, slot]) => {
+    Object.entries(this.userSlotsMap).forEach(([slotId, slot]) => {
       const datePosition = slot.start.getDate() - this.startDate.getDate();
       let startHour = slot.start.getHours();
       const endHour = slot.end.getHours();
-      const restColor = slot.scheduled ? '#f89696' : '#e0e0e0';
-      const bookingColor = slot.scheduled ? '#f40105' : '#3eb2ff';
-      const rest = [startHour - 2, startHour - 1, endHour, endHour + 1];
-      rest.forEach((i) => {
-        this.slotColumns[datePosition][i].color = restColor;
-        this.slotColumns[datePosition][i].slotId = slotId;
+      const [restColor, scheduleColor] = slot.scheduled
+        ? ['#f89696', '#f40105']
+        : ['#e0e0e0', '#3eb2ff'];
+      const restHours = [startHour - 2, startHour - 1, endHour, endHour + 1];
+      restHours.forEach((h) => {
+        this.daySlotsList[datePosition][h].color = restColor;
+        this.daySlotsList[datePosition][h].slotId = slotId;
       });
       while (startHour < endHour) {
-        this.slotColumns[datePosition][startHour].color = bookingColor;
-        this.slotColumns[datePosition][startHour].slotId = slotId;
+        this.daySlotsList[datePosition][startHour].color = scheduleColor;
+        this.daySlotsList[datePosition][startHour].slotId = slotId;
         startHour++;
       }
     });
-  }
-
-  addDays(date: Date, days: number): Date {
-    return new Date(new Date(date).setDate(date.getDate() + days));
   }
 
   onClickSlotNode(node: SlotNode) {
@@ -97,83 +93,90 @@ export class AppComponent implements OnInit {
       this.dialog.open(DialogComponent, {
         width: '320px',
         data: {
-          slots: this.slots,
+          slot: this.userSlotsMap[node.slotId],
           slotNode: node,
-          edit: this.edit.bind(this),
-          delete: (node: SlotNode) => {
-            delete this.slots[node.slotId];
-            this.ngOnInit();
-          },
+          edit: this.editSchedule.bind(this),
+          delete: this.deleteSchedule.bind(this),
         },
       });
-    } else {
-      if (this.verifyMaxCountForADay(node)) {
-        if (this.verifySpace(node)) {
-          this.createSchedule(node);
-        } else {
-          alert('Limited free space to squeeze in');
-        }
-      } else {
-        alert('Max slots reached for today');
-      }
-    }
+    } else this.createSchedule(node);
   }
 
   createSchedule(node: SlotNode) {
-    const MIN_STUDY_DURATION = 3;
+    if (!this.verifyMaxCountForADay(node))
+      return alert('Max slots reached for the day');
+    if (!this.verifySpace(node))
+      return alert('Limited free space to squeeze in');
+
     const id = String(new Date().getTime());
-    const scheduleDate = this.addDays(this.startDate, node.datePosition);
-    this.slots[id] = {
-      start: new Date(scheduleDate.setHours(node.hour, 0, 0, 0)),
-      end: new Date(
-        scheduleDate.setHours(node.hour + MIN_STUDY_DURATION, 0, 0, 0)
-      ),
+    const date = addDays(this.startDate, node.datePosition);
+    this.userSlotsMap[id] = {
+      start: new Date(date.setHours(node.hour, 0, 0, 0)),
+      end: new Date(date.setHours(node.hour + MIN_STUDY_DURATION, 0, 0, 0)),
       scheduled: false,
       cost: false,
     };
-    this.ngOnInit();
+    this.loadSlotsGrid();
   }
 
-  edit(
+  editSchedule(
     startHour: number,
     endHour: number,
     cost: boolean,
-    datePosition: number,
-    slotId: string
+    slot: SlotNode
   ) {
-    const todaysList = this.slotColumns[datePosition];
-    let newStartHour = startHour - 2;
-    while (newStartHour < endHour + 2) {
-      if (
-        todaysList[newStartHour].slotId &&
-        todaysList[newStartHour].slotId !== slotId
-      )
-        return false;
-      newStartHour++;
-    }
-    this.slots[slotId].start.setHours(startHour);
-    this.slots[slotId].end.setHours(endHour);
-    this.slots[slotId].cost = cost;
-    this.ngOnInit();
+    if (!this.verifyOverlap(startHour, endHour, slot)) return false;
+
+    this.userSlotsMap[slot.slotId].start.setHours(startHour);
+    this.userSlotsMap[slot.slotId].end.setHours(endHour);
+    this.userSlotsMap[slot.slotId].cost = cost;
+    this.loadSlotsGrid();
     return true;
   }
 
+  deleteSchedule(slotId: string) {
+    delete this.userSlotsMap[slotId];
+    this.loadSlotsGrid();
+  }
+
   verifyMaxCountForADay(node: SlotNode): boolean {
-    const todaysList = this.slotColumns[node.datePosition];
+    // A day can have max 2 bookings. Return true if no problem
+    const todaysList = this.daySlotsList[node.datePosition];
     const slots = new Set(
-      todaysList.filter((n) => Boolean(n.slotId)).map((n) => n.slotId)
+      todaysList.filter((n) => n.slotId).map((n) => n.slotId)
     );
     return slots.size < 2;
   }
 
   verifySpace(node: SlotNode): boolean {
+    // Verify a new schedule with default timing can be fit into a day. Return true if no problem
     const selectedStartHour = node.hour;
     if (node.hour < 2 || node.hour > 19) return false;
-    const todaysList = this.slotColumns[node.datePosition];
+    const todaysList = this.daySlotsList[node.datePosition];
     const requiredEmptySlots = new Array(6)
       .fill(0)
       .map((_, i) => i + selectedStartHour - 2);
     if (requiredEmptySlots.some((i) => todaysList[i].slotId)) return false;
     return true;
   }
+
+  verifyOverlap(startHour: number, endHour: number, slot: SlotNode): boolean {
+    // Verify no other slots overlap. Return true if no problem
+    const todaysList = this.daySlotsList[slot.datePosition];
+    let startHourWithRest = startHour - 2;
+    const endHourWithRest = endHour + 2;
+    while (startHourWithRest < endHourWithRest) {
+      if (
+        todaysList[startHourWithRest].slotId &&
+        todaysList[startHourWithRest].slotId !== slot.slotId
+      )
+        return false;
+      startHourWithRest++;
+    }
+    return true;
+  }
+}
+
+function addDays(date: Date, days: number): Date {
+  return new Date(new Date(date).setDate(date.getDate() + days));
 }

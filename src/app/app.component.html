@@ -27,7 +27,7 @@
       <div>
         <div
           class="slot-hours"
-          *ngFor="let slotColumn of slotColumns[0]; let i = index"
+          *ngFor="let daySlot of daySlotsList[0]; let i = index"
         >
           <span *ngIf="i === 0">12 a</span>
           <span *ngIf="i > 0 && i < 12">{{ i }}</span>
@@ -35,8 +35,8 @@
           <span *ngIf="i === 12">12 p</span>
         </div>
       </div>
-      <div *ngFor="let slotColumn of slotColumns">
-        <div *ngFor="let slotNode of slotColumn; let i = index">
+      <div *ngFor="let daySlot of daySlotsList">
+        <div *ngFor="let slotNode of daySlot; let i = index">
           <div
             class="slot {{ slotNode?.slotId ? 'schedule' : '' }}"
             [style.background-color]="slotNode.color"

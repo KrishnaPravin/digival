@@ -1,12 +1,3 @@
-export type Slot = {
-  start: Date;
-  end: Date;
-  scheduled: boolean;
-  cost: boolean;
-};
-
-export type SlotsMap = { [key: string]: Slot };
-
 export type SlotNode = {
   date: Date;
   datePosition: number;
@@ -15,18 +6,25 @@ export type SlotNode = {
   color: string;
 };
 
-export type SlotRows = SlotNode[];
-export type SlotColumns = SlotNode[];
+export type DaySlotsList = SlotNode[][];
+
+export type Slot = {
+  start: Date;
+  end: Date;
+  scheduled: boolean;
+  cost: boolean;
+};
+
+export type UserSlotsMap = { [key: string]: Slot };
 
 export type DialogData = {
-  slots: SlotsMap;
+  slot: Slot;
   slotNode: SlotNode;
   edit: (
     startTime: number,
     endTime: number,
     cost: boolean,
-    datePosition: number,
-    slotId: string
+    slot: SlotNode
   ) => boolean;
-  delete: (node: SlotNode) => void;
+  delete: (slotId: string) => void;
 };

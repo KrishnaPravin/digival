@@ -1,6 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { debug } from 'console';
 import { DialogData } from '../app.model';
 
 @Component({
@@ -15,6 +14,7 @@ export class DialogComponent implements OnInit {
   initialStartTime: number;
   initialEndTime: number;
   cost: boolean;
+  isScheduled: boolean;
 
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
@@ -22,12 +22,12 @@ export class DialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const slot = this.data.slots[this.data.slotNode.slotId];
-    this.startTime = slot.start.getHours();
+    this.startTime = this.data.slot.start.getHours();
     this.initialStartTime = this.startTime;
-    this.endTime = slot.end.getHours();
+    this.endTime = this.data.slot.end.getHours();
     this.initialEndTime = this.endTime;
-    this.cost = slot.cost;
+    this.cost = this.data.slot.cost;
+    this.isScheduled = this.data.slot.scheduled;
   }
 
   close(): void {
@@ -44,18 +44,17 @@ export class DialogComponent implements OnInit {
         Number(this.startTime),
         Number(this.endTime),
         this.cost,
-        this.data.slotNode.datePosition,
-        this.data.slotNode.slotId
+        this.data.slotNode
       )
     ) {
       this.dialogRef.close();
     } else {
-      alert('Another slot exists for this interval');
+      alert('Another slot exists in this interval');
     }
   }
 
   delete() {
     this.dialogRef.close();
-    this.data.delete(this.data.slotNode);
+    this.data.delete(this.data.slotNode.slotId);
   }
 }

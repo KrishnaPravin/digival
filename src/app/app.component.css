@@ -103,23 +103,13 @@
   border: none;
 }
 
-.adjust-slot:first-child {
-  display: inline-block;
-  color: white;
+.adjust-slider {
   cursor: ns-resize;
-  width: 100%;
+  padding: 8px 0;
 }
 
-.adjust-slot {
-  padding: 5px 0;
-}
-
-.adjust-slot hr {
-  margin: 0 5px;
-}
-
-.adjust-slot hr + hr {
-  margin-top: 2px;
+.adjust-slider hr {
+  margin: 1px 5px;
 }
 
 .buttons {

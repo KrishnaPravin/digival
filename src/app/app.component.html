@@ -41,7 +41,25 @@
             class="slot {{ slotNode?.slotId ? 'schedule' : '' }}"
             [style.background-color]="slotNode.color"
             (click)="onClickSlotNode(slotNode)"
-          ></div>
+            (drop)="drop($event, slotNode)"
+            (dragover)="allowDrop($event)"
+          >
+            <div
+              class="adjust-slider"
+              *ngIf="
+                !userSlotsMap[slotNode.slotId]?.scheduled &&
+                (userSlotsMap[slotNode.slotId]?.start.getHours() ===
+                  slotNode.hour ||
+                  userSlotsMap[slotNode.slotId]?.end.getHours() ===
+                    slotNode.hour + 1)
+              "
+              (dragstart)="dragStart($event, slotNode)"
+              draggable="true"
+            >
+              <hr />
+              <hr />
+            </div>
+          </div>
         </div>
       </div>
     </div>

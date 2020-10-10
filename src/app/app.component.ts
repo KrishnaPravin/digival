@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
     this.loadSlotsGrid();
   }
 
-  loadSlotsGrid() {
+  loadSlotsGrid(): void {
     // Generate 14x24 empty slots to fill the view
     this.daySlotsList = new Array(14).fill(null).map((_, datePosition) =>
       new Array(24).fill(0).map((_, hour) => {
@@ -87,7 +87,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  onClickSlotNode(node: SlotNode) {
+  onClickSlotNode(node: SlotNode): void {
     if (node.slotId) {
       this.dialog.closeAll();
       this.dialog.open(DialogComponent, {
@@ -102,7 +102,7 @@ export class AppComponent implements OnInit {
     } else this.createSchedule(node);
   }
 
-  createSchedule(node: SlotNode) {
+  createSchedule(node: SlotNode): void {
     if (!this.verifyMaxCountForADay(node))
       return alert('Max slots reached for the day');
     if (!this.verifySpace(node))
@@ -122,19 +122,19 @@ export class AppComponent implements OnInit {
   editSchedule(
     startHour: number,
     endHour: number,
-    cost: boolean,
-    slot: SlotNode
-  ) {
+    slot: SlotNode,
+    cost?: boolean
+  ): boolean {
     if (!this.verifyOverlap(startHour, endHour, slot)) return false;
 
     this.userSlotsMap[slot.slotId].start.setHours(startHour);
     this.userSlotsMap[slot.slotId].end.setHours(endHour);
-    this.userSlotsMap[slot.slotId].cost = cost;
+    if (cost) this.userSlotsMap[slot.slotId].cost = cost;
     this.loadSlotsGrid();
     return true;
   }
 
-  deleteSchedule(slotId: string) {
+  deleteSchedule(slotId: string): void {
     delete this.userSlotsMap[slotId];
     this.loadSlotsGrid();
   }
@@ -174,6 +174,38 @@ export class AppComponent implements OnInit {
       startHourWithRest++;
     }
     return true;
+  }
+
+  dragStart(event, slotNode: SlotNode): void {
+    event.dataTransfer.setData('slotNode', JSON.stringify(slotNode));
+  }
+
+  allowDrop(event): void {
+    event.preventDefault();
+  }
+
+  drop(event, newSlot: SlotNode): void {
+    event.preventDefault();
+    const oldSlot = JSON.parse(
+      event.dataTransfer.getData('slotNode')
+    ) as SlotNode;
+    if (oldSlot.datePosition !== newSlot.datePosition) return;
+    const userSlot = this.userSlotsMap[oldSlot.slotId];
+
+    const [startHour, endHour] =
+      userSlot.start.getHours() === oldSlot.hour
+        ? [newSlot.hour, userSlot.end.getHours()]
+        : [userSlot.start.getHours(), newSlot.hour + 1];
+
+    if (endHour - startHour < 3) {
+      return alert('Minimum 3 hours required');
+    }
+    if (startHour < 2 || endHour > 22) {
+      return alert('Either start or End is at the edge');
+    }
+
+    if (!this.editSchedule(startHour, endHour, oldSlot))
+      alert('Another slot exists in this interval');
   }
 }
 

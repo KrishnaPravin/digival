@@ -23,8 +23,8 @@ export type DialogData = {
   edit: (
     startTime: number,
     endTime: number,
-    cost: boolean,
-    slot: SlotNode
+    slot: SlotNode,
+    cost?: boolean
   ) => boolean;
   delete: (slotId: string) => void;
 };

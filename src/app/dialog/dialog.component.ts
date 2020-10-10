@@ -43,8 +43,8 @@ export class DialogComponent implements OnInit {
       this.data.edit(
         Number(this.startTime),
         Number(this.endTime),
-        this.cost,
-        this.data.slotNode
+        this.data.slotNode,
+        this.cost
       )
     ) {
       this.dialogRef.close();

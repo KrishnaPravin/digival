@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DaySlotsList, SlotNode, UserSlotsMap } from './app.model';
+import { DaySlotsList, DialogData, SlotNode, UserSlotsMap } from './app.model';
 import { DialogComponent } from './dialog/dialog.component';
 
 type DaysList = [Date, string][];
@@ -90,25 +90,39 @@ export class AppComponent implements OnInit {
   onClickSlotNode(node: SlotNode): void {
     if (node.slotId) {
       this.dialog.closeAll();
-      this.dialog.open(DialogComponent, {
+      this.dialog.open<DialogComponent, DialogData>(DialogComponent, {
         width: '320px',
         data: {
           slot: this.userSlotsMap[node.slotId],
           slotNode: node,
-          edit: this.editSchedule.bind(this),
-          delete: this.deleteSchedule.bind(this),
+          edit: (
+            startHour: number,
+            endHour: number,
+            slot: SlotNode,
+            cost: boolean,
+            repeat: boolean
+          ) => {
+            return this.editSchedule(startHour, endHour, slot, cost, repeat);
+          },
+          delete: (slotId: string) => this.deleteSchedule(slotId),
+          checkRepeat: (
+            startHour: number,
+            endHour: number,
+            fromDatePosition: number
+          ) => this.checkRepeat(startHour, endHour, fromDatePosition),
         },
       });
     } else this.createSchedule(node);
   }
 
-  createSchedule(node: SlotNode): void {
+  createSchedule(node: SlotNode, skipLoad: boolean = false): void {
     if (!this.verifyMaxCountForADay(node))
       return alert('Max slots reached for the day');
-    if (!this.verifySpace(node))
+    if (!this.verifySpace(node)) {
       return alert('Limited free space to squeeze in');
+    }
 
-    const id = String(new Date().getTime());
+    const id = new Date().getTime() + '-' + Math.floor(Math.random() * 100);
     const date = addDays(this.startDate, node.datePosition);
     this.userSlotsMap[id] = {
       start: new Date(date.setHours(node.hour, 0, 0, 0)),
@@ -116,20 +130,29 @@ export class AppComponent implements OnInit {
       scheduled: false,
       cost: false,
     };
-    this.loadSlotsGrid();
+    if (!skipLoad) this.loadSlotsGrid();
   }
 
   editSchedule(
     startHour: number,
     endHour: number,
     slot: SlotNode,
-    cost?: boolean
+    cost?: boolean,
+    repeat?: boolean
   ): boolean {
     if (!this.verifyOverlap(startHour, endHour, slot)) return false;
 
     this.userSlotsMap[slot.slotId].start.setHours(startHour);
     this.userSlotsMap[slot.slotId].end.setHours(endHour);
-    if (cost) this.userSlotsMap[slot.slotId].cost = cost;
+    if (cost !== undefined) this.userSlotsMap[slot.slotId].cost = cost;
+    if (repeat) {
+      let datePosition = slot.datePosition + 1;
+      console.log(datePosition);
+
+      while (datePosition < 14) {
+        this.createSchedule(this.daySlotsList[datePosition++][startHour], true);
+      }
+    }
     this.loadSlotsGrid();
     return true;
   }
@@ -141,10 +164,8 @@ export class AppComponent implements OnInit {
 
   verifyMaxCountForADay(node: SlotNode): boolean {
     // A day can have max 2 bookings. Return true if no problem
-    const todaysList = this.daySlotsList[node.datePosition];
-    const slots = new Set(
-      todaysList.filter((n) => n.slotId).map((n) => n.slotId)
-    );
+    const dayList = this.daySlotsList[node.datePosition];
+    const slots = new Set(dayList.filter((n) => n.slotId).map((n) => n.slotId));
     return slots.size < 2;
   }
 
@@ -152,26 +173,46 @@ export class AppComponent implements OnInit {
     // Verify a new schedule with default timing can be fit into a day. Return true if no problem
     const selectedStartHour = node.hour;
     if (node.hour < 2 || node.hour > 19) return false;
-    const todaysList = this.daySlotsList[node.datePosition];
-    const requiredEmptySlots = new Array(6)
+    const dayList = this.daySlotsList[node.datePosition];
+    const requiredEmptySlots = new Array(7)
       .fill(0)
       .map((_, i) => i + selectedStartHour - 2);
-    if (requiredEmptySlots.some((i) => todaysList[i].slotId)) return false;
+    if (requiredEmptySlots.some((i) => dayList[i].slotId)) return false;
     return true;
   }
 
   verifyOverlap(startHour: number, endHour: number, slot: SlotNode): boolean {
     // Verify no other slots overlap. Return true if no problem
-    const todaysList = this.daySlotsList[slot.datePosition];
+    const dayList = this.daySlotsList[slot.datePosition];
     let startHourWithRest = startHour - 2;
     const endHourWithRest = endHour + 2;
     while (startHourWithRest < endHourWithRest) {
       if (
-        todaysList[startHourWithRest].slotId &&
-        todaysList[startHourWithRest].slotId !== slot.slotId
+        dayList[startHourWithRest].slotId &&
+        dayList[startHourWithRest].slotId !== slot.slotId
       )
         return false;
       startHourWithRest++;
+    }
+    return true;
+  }
+
+  checkRepeat(
+    startHour: number,
+    endHour: number,
+    fromDatePosition: number
+  ): boolean {
+    while (fromDatePosition < 14) {
+      const slotNodes = this.daySlotsList[fromDatePosition++];
+      if (!this.verifyMaxCountForADay(slotNodes[startHour])) {
+        return false;
+      }
+
+      let start = startHour;
+      while (start <= endHour)
+        if (slotNodes[start++].slotId) {
+          return false;
+        }
     }
     return true;
   }

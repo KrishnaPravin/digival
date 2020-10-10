@@ -15,6 +15,7 @@ export class DialogComponent implements OnInit {
   initialEndTime: number;
   cost: boolean;
   isScheduled: boolean;
+  repeat = false;
 
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
@@ -39,12 +40,25 @@ export class DialogComponent implements OnInit {
       return alert('Minimum 3 hours required');
     if (this.startTime < 2 || this.endTime > 22)
       return alert('Either start or End is at the edge');
+
+    if (
+      this.repeat &&
+      !this.data.checkRepeat(
+        Number(this.startTime),
+        Number(this.endTime),
+        this.data.slotNode.datePosition + 1
+      )
+    ) {
+      return alert('Cannot repeat due to a clash');
+    }
+
     if (
       this.data.edit(
         Number(this.startTime),
         Number(this.endTime),
         this.data.slotNode,
-        this.cost
+        this.cost,
+        this.repeat
       )
     ) {
       this.dialogRef.close();

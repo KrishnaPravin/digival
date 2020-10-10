@@ -24,7 +24,13 @@ export type DialogData = {
     startTime: number,
     endTime: number,
     slot: SlotNode,
-    cost?: boolean
+    cost: boolean,
+    repeat: boolean
   ) => boolean;
   delete: (slotId: string) => void;
+  checkRepeat: (
+    startHour: number,
+    endHour: number,
+    fromDatePosition: number
+  ) => boolean;
 };

@@ -38,9 +38,9 @@
 </div>
 
 <div class="checkbox-container">
-  <div>
-    <mat-checkbox [disabled]="isScheduled">
-      Repeat for next two weeks
+  <div *ngIf="13 - data.slotNode.datePosition">
+    <mat-checkbox [disabled]="isScheduled" [(ngModel)]="repeat">
+      Repeat for next {{ 13 - data.slotNode.datePosition }} day(s)
     </mat-checkbox>
   </div>
   <div>

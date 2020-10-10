@@ -1,5 +1,9 @@
 # Digival
 
+![Deploy Site](https://github.com/KrishnaPravin/digival/workflows/Deploy%20Site/badge.svg?branch=main)
+
+Site preview available at [krishnapravin.surge.sh](krishnapravin.surge.sh). Auto deployed using Github actions and surge.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.1.5.
 
 ## Development server
